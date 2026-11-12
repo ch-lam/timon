@@ -1,0 +1,8001 @@
+{
+  "_comment": "Schema of timon.db as this version creates it in a fresh home. Generated: never edit by hand. Regenerate with TIMON_DB_SCHEMA_UPDATE=1 npm test -- src/db-schema-manifest.test.ts",
+  "fingerprint": "sha256:e2a762d6ea9e657d9f66efd2a730bc0738629083db9b27ad3e69c573fbed3184",
+  "tables": {
+    "agent_messages": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "from_mission",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "from_agent",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "to_agent",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "to_mission",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "kind",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'msg'",
+          "primaryKey": 0
+        },
+        {
+          "name": "payload",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "in_reply_to",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "picked_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'pending'",
+          "primaryKey": 0
+        },
+        {
+          "name": "owner_user_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "trace_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_agent_messages_owner": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "owner_user_id"
+          ],
+          "sql": "CREATE INDEX idx_agent_messages_owner ON agent_messages(owner_user_id)"
+        },
+        "idx_msgs_from": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "from_mission"
+          ],
+          "sql": "CREATE INDEX idx_msgs_from ON agent_messages(from_mission)"
+        },
+        "idx_msgs_pending": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "to_mission",
+            "to_agent"
+          ],
+          "sql": "CREATE INDEX idx_msgs_pending ON agent_messages(to_mission, to_agent) WHERE status = 'pending'"
+        },
+        "idx_msgs_reply": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "in_reply_to"
+          ],
+          "sql": "CREATE INDEX idx_msgs_reply ON agent_messages(in_reply_to)"
+        },
+        "idx_msgs_to_status": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "to_agent",
+            "status",
+            "created_at"
+          ],
+          "sql": "CREATE INDEX idx_msgs_to_status ON agent_messages(to_agent, status, created_at)"
+        },
+        "sqlite_autoindex_agent_messages_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [
+        {
+          "columns": [
+            "from_mission"
+          ],
+          "references": "missions",
+          "referencedColumns": [
+            "id"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "NO ACTION"
+        }
+      ],
+      "triggers": {}
+    },
+    "agent_request_deliveries": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "request_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "mission_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "event_id",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "settled_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_request_deliveries_open": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "mission_id"
+          ],
+          "sql": "CREATE INDEX idx_request_deliveries_open ON agent_request_deliveries(mission_id) WHERE settled_at IS NULL"
+        },
+        "sqlite_autoindex_agent_request_deliveries_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "request_id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [
+        {
+          "columns": [
+            "mission_id"
+          ],
+          "references": "missions",
+          "referencedColumns": [
+            "id"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        },
+        {
+          "columns": [
+            "request_id"
+          ],
+          "references": "agent_messages",
+          "referencedColumns": [
+            "id"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "triggers": {}
+    },
+    "api_tokens": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "token_hash",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "user_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "label",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "scope",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "last_used_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "expires_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "mission_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_api_tokens_mission": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "mission_id"
+          ],
+          "sql": "CREATE INDEX idx_api_tokens_mission ON api_tokens(mission_id)"
+        },
+        "idx_api_tokens_user": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "user_id"
+          ],
+          "sql": "CREATE INDEX idx_api_tokens_user ON api_tokens(user_id)"
+        },
+        "sqlite_autoindex_api_tokens_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "token_hash"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "approval_rules": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "scope",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "owner_user_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "agent",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "mission_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "tool_name",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "command",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "command_hash",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_approval_rules_agent": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "agent",
+            "owner_user_id",
+            "scope"
+          ],
+          "sql": "CREATE INDEX idx_approval_rules_agent ON approval_rules(agent, owner_user_id, scope)"
+        },
+        "idx_approval_rules_mission": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "mission_id"
+          ],
+          "sql": "CREATE INDEX idx_approval_rules_mission ON approval_rules(mission_id) WHERE mission_id IS NOT NULL"
+        },
+        "sqlite_autoindex_approval_rules_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "audit_log": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "user_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "action",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "target",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "ip",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "actor",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_audit_log_at": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "at"
+          ],
+          "sql": "CREATE INDEX idx_audit_log_at ON audit_log(at)"
+        },
+        "idx_audit_log_user": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "user_id"
+          ],
+          "sql": "CREATE INDEX idx_audit_log_user ON audit_log(user_id)"
+        },
+        "sqlite_autoindex_audit_log_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "backend_account_grants": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "account_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "user_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 2
+        },
+        {
+          "name": "granted_by",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "granted_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_backend_account_grants_user": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "user_id"
+          ],
+          "sql": "CREATE INDEX idx_backend_account_grants_user ON backend_account_grants(user_id)"
+        },
+        "sqlite_autoindex_backend_account_grants_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "account_id",
+            "user_id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [
+        {
+          "columns": [
+            "account_id"
+          ],
+          "references": "backend_accounts",
+          "referencedColumns": [
+            "id"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "triggers": {}
+    },
+    "backend_account_missions": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "mission_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "backend",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "account_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "frozen_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "sqlite_autoindex_backend_account_missions_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "mission_id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "backend_accounts": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "backend",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "owner_user_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'active'",
+          "primaryKey": 0
+        },
+        {
+          "name": "created_by",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "identity_key",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "identity_label",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_backend_accounts_identity": {
+          "unique": true,
+          "origin": "c",
+          "columns": [
+            "backend",
+            "identity_key"
+          ],
+          "sql": "CREATE UNIQUE INDEX idx_backend_accounts_identity ON backend_accounts(backend, identity_key) WHERE identity_key IS NOT NULL"
+        },
+        "idx_backend_accounts_name": {
+          "unique": true,
+          "origin": "c",
+          "columns": [
+            "backend",
+            null,
+            "name"
+          ],
+          "sql": "CREATE UNIQUE INDEX idx_backend_accounts_name ON backend_accounts(backend, COALESCE(owner_user_id, ''), name COLLATE NOCASE)"
+        },
+        "idx_backend_accounts_owner": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "owner_user_id"
+          ],
+          "sql": "CREATE INDEX idx_backend_accounts_owner ON backend_accounts(owner_user_id)"
+        },
+        "sqlite_autoindex_backend_accounts_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "backend_cooldowns": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "backend",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "until",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "quota_window",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "noted_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "exact",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        },
+        {
+          "name": "kind",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'rate_limit'",
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "sqlite_autoindex_backend_cooldowns_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "backend"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "backend_overlays": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "disabled",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        },
+        {
+          "name": "label",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "icon",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "brand",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "rank",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "models",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "sqlite_autoindex_backend_overlays_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "browser_profiles": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "owner_user_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "scope_kind",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "scope_ref",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "grants",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'{}'",
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_browser_profiles_owner": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "owner_user_id"
+          ],
+          "sql": "CREATE INDEX idx_browser_profiles_owner ON browser_profiles(owner_user_id)"
+        },
+        "idx_browser_profiles_scope": {
+          "unique": true,
+          "origin": "c",
+          "columns": [
+            null,
+            "scope_kind",
+            null
+          ],
+          "sql": "CREATE UNIQUE INDEX idx_browser_profiles_scope ON browser_profiles( COALESCE(owner_user_id, ''), scope_kind, COALESCE(scope_ref, '') ) WHERE scope_kind <> 'custom'"
+        },
+        "sqlite_autoindex_browser_profiles_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "browser_sessions": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "project",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "container_name",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "cdp_port",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "novnc_port",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'stopped'",
+          "primaryKey": 0
+        },
+        {
+          "name": "started_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "stopped_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "last_used_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "open_tabs",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "owner_user_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_browser_sessions_owner": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "owner_user_id"
+          ],
+          "sql": "CREATE INDEX idx_browser_sessions_owner ON browser_sessions(owner_user_id)"
+        },
+        "idx_browser_sessions_status": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "status"
+          ],
+          "sql": "CREATE INDEX idx_browser_sessions_status ON browser_sessions(status)"
+        },
+        "sqlite_autoindex_browser_sessions_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "project"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "command_requests": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "mission_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "owner_user_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "agent",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "command",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "note",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "session_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "project",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "mission_title",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "task_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "choices",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'pending'",
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "resolved_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "origin_kind",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'agent'",
+          "primaryKey": 0
+        },
+        {
+          "name": "origin_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_command_requests_mission": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "mission_id",
+            "created_at"
+          ],
+          "sql": "CREATE INDEX idx_command_requests_mission ON command_requests(mission_id, created_at)"
+        },
+        "idx_command_requests_owner": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "owner_user_id",
+            "status",
+            "created_at"
+          ],
+          "sql": "CREATE INDEX idx_command_requests_owner ON command_requests(owner_user_id, status, created_at)"
+        },
+        "sqlite_autoindex_command_requests_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "device_pairing_codes": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "selector",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "code_hash",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "user_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "expires_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "attempts",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        },
+        {
+          "name": "max_attempts",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "used_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_device_pairing_codes_user": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "user_id"
+          ],
+          "sql": "CREATE INDEX idx_device_pairing_codes_user ON device_pairing_codes(user_id)"
+        },
+        "sqlite_autoindex_device_pairing_codes_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "selector"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [
+        {
+          "columns": [
+            "user_id"
+          ],
+          "references": "users",
+          "referencedColumns": [
+            "id"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "triggers": {}
+    },
+    "devices": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "token_hash",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "user_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "last_seen_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "last_ip",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "user_agent",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "revoked_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_devices_user": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "user_id"
+          ],
+          "sql": "CREATE INDEX idx_devices_user ON devices(user_id)"
+        },
+        "sqlite_autoindex_devices_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        },
+        "sqlite_autoindex_devices_2": {
+          "unique": true,
+          "origin": "u",
+          "columns": [
+            "token_hash"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [
+        {
+          "columns": [
+            "user_id"
+          ],
+          "references": "users",
+          "referencedColumns": [
+            "id"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "triggers": {}
+    },
+    "dream_proposals": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "kind",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "project",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "title",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "body",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "rationale",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "effort",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "conviction",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "sources",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'pending'",
+          "primaryKey": 0
+        },
+        {
+          "name": "run_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "decided_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "snooze_until",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "owner_user_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_dream_proposals_owner": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "owner_user_id"
+          ],
+          "sql": "CREATE INDEX idx_dream_proposals_owner ON dream_proposals(owner_user_id)"
+        },
+        "idx_dreams_status": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "status",
+            "kind"
+          ],
+          "sql": "CREATE INDEX idx_dreams_status ON dream_proposals(status, kind)"
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "egress_known_hosts": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "project_key",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "host",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 2
+        },
+        {
+          "name": "first_seen_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "first_mission_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_egress_known_hosts_age": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "project_key",
+            "first_seen_at"
+          ],
+          "sql": "CREATE INDEX idx_egress_known_hosts_age ON egress_known_hosts(project_key, first_seen_at)"
+        },
+        "idx_egress_known_hosts_mission": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "first_mission_id"
+          ],
+          "sql": "CREATE INDEX idx_egress_known_hosts_mission ON egress_known_hosts(first_mission_id)"
+        },
+        "sqlite_autoindex_egress_known_hosts_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "project_key",
+            "host"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "egress_log": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "mission_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "method",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "host",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "port",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "status",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "bytes_out",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "bytes_in",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "started_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "duration_ms",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "error",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_egress_log_mission": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "mission_id",
+            "id"
+          ],
+          "sql": "CREATE INDEX idx_egress_log_mission ON egress_log(mission_id, id)"
+        },
+        "idx_egress_log_started": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "started_at"
+          ],
+          "sql": "CREATE INDEX idx_egress_log_started ON egress_log(started_at)"
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "email_changes": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "token_hash",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "user_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "new_email",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "expires_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "confirmed_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_email_changes_expires": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "expires_at"
+          ],
+          "sql": "CREATE INDEX idx_email_changes_expires ON email_changes(expires_at)"
+        },
+        "idx_email_changes_user": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "user_id"
+          ],
+          "sql": "CREATE INDEX idx_email_changes_user ON email_changes(user_id)"
+        },
+        "sqlite_autoindex_email_changes_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "token_hash"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [
+        {
+          "columns": [
+            "user_id"
+          ],
+          "references": "users",
+          "referencedColumns": [
+            "id"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "NO ACTION"
+        }
+      ],
+      "triggers": {}
+    },
+    "events": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "mission_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "type",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "timestamp",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "payload",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_events_mission": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "mission_id",
+            "id"
+          ],
+          "sql": "CREATE INDEX idx_events_mission ON events(mission_id, id)"
+        },
+        "idx_events_mission_chat": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "mission_id",
+            "id"
+          ],
+          "sql": "CREATE INDEX idx_events_mission_chat ON events(mission_id, id) WHERE type NOT IN ('tool_progress') AND NOT (type = 'system' AND (payload LIKE '{\"type\":\"system\",\"subtype\":\"thinking\\_tokens\"%' ESCAPE '\\' OR payload LIKE '{\"type\":\"system\",\"subtype\":\"status\"%' ESCAPE '\\'))"
+        },
+        "idx_events_timestamp": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "timestamp",
+            "mission_id"
+          ],
+          "sql": "CREATE INDEX idx_events_timestamp ON events(timestamp, mission_id)"
+        }
+      },
+      "foreignKeys": [
+        {
+          "columns": [
+            "mission_id"
+          ],
+          "references": "missions",
+          "referencedColumns": [
+            "id"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "NO ACTION"
+        }
+      ],
+      "triggers": {
+        "mission_stats_on_event": "CREATE TRIGGER mission_stats_on_event AFTER INSERT ON events BEGIN UPDATE mission_stats SET event_count = event_count + 1, last_event_at = CASE WHEN last_event_at IS NULL OR new.timestamp > last_event_at THEN new.timestamp ELSE last_event_at END, last_result_id = CASE WHEN new.type = 'result' AND NOT (CASE WHEN json_valid(new.payload) THEN json_type(new.payload, '$.timon_steered') IS 'true' ELSE 0 END) THEN new.id ELSE last_result_id END, last_user_id = CASE WHEN new.type = 'user' THEN new.id ELSE last_user_id END, last_result_model = CASE WHEN new.type = 'result' THEN CASE WHEN json_valid(new.payload) AND json_type(new.payload) = 'object' THEN CASE WHEN json_type(new.payload, '$.model') IS NOT NULL AND json_type(new.payload, '$.model') <> 'null' THEN CASE WHEN json_type(new.payload, '$.model') = 'text' THEN NULLIF(json_extract(new.payload, '$.model'), '') END WHEN json_type(new.payload, '$.modelID') = 'text' THEN NULLIF(json_extract(new.payload, '$.modelID'), '') END END ELSE last_result_model END WHERE mission_id = new.mission_id; END"
+      }
+    },
+    "layout_proposals": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "kind",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "mission_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "owner_user_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "agent",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "payload",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "note",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "project",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "mission_title",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "task_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'pending'",
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "resolved_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "origin_kind",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'agent'",
+          "primaryKey": 0
+        },
+        {
+          "name": "origin_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_layout_proposals_mission": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "mission_id",
+            "created_at"
+          ],
+          "sql": "CREATE INDEX idx_layout_proposals_mission ON layout_proposals(mission_id, created_at)"
+        },
+        "idx_layout_proposals_owner": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "owner_user_id",
+            "status",
+            "created_at"
+          ],
+          "sql": "CREATE INDEX idx_layout_proposals_owner ON layout_proposals(owner_user_id, status, created_at)"
+        },
+        "sqlite_autoindex_layout_proposals_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "learnings": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "mission_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "agent",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "project",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "role",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "kind",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "text",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "hash",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "ts",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'raw'",
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_learnings_kind_status": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "kind",
+            "status"
+          ],
+          "sql": "CREATE INDEX idx_learnings_kind_status ON learnings(kind, status)"
+        },
+        "idx_learnings_project_status": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "project",
+            "status"
+          ],
+          "sql": "CREATE INDEX idx_learnings_project_status ON learnings(project, status)"
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "machines": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "owner_user_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "url",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "token_enc",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "remote_device_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "remote_user_email",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "remote_user_name",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "remote_is_superadmin",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'unknown'",
+          "primaryKey": 0
+        },
+        {
+          "name": "version",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "api_level",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "last_checked_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "last_ok_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_machines_owner": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "owner_user_id"
+          ],
+          "sql": "CREATE INDEX idx_machines_owner ON machines(owner_user_id)"
+        },
+        "sqlite_autoindex_machines_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        },
+        "sqlite_autoindex_machines_2": {
+          "unique": true,
+          "origin": "u",
+          "columns": [
+            "owner_user_id",
+            "url"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [
+        {
+          "columns": [
+            "owner_user_id"
+          ],
+          "references": "users",
+          "referencedColumns": [
+            "id"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "triggers": {}
+    },
+    "mcp_tokens": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "token_hash",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "mission_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "agent_name",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "scopes",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "issued_by",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "expires_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "last_used_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_mcp_tokens_mission": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "mission_id"
+          ],
+          "sql": "CREATE INDEX idx_mcp_tokens_mission ON mcp_tokens(mission_id)"
+        },
+        "sqlite_autoindex_mcp_tokens_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        },
+        "sqlite_autoindex_mcp_tokens_2": {
+          "unique": true,
+          "origin": "u",
+          "columns": [
+            "token_hash"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "memory_audit": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "ts",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "run_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "scope",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "project",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "agent",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "action",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "rule_id",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "target_rule_id",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "candidate_text",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "rationale",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "reverted",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_audit_run": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "run_id"
+          ],
+          "sql": "CREATE INDEX idx_audit_run ON memory_audit(run_id)"
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "memory_proposals": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "scope",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'project'",
+          "primaryKey": 0
+        },
+        {
+          "name": "project",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "agent",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "kind",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "text",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "rationale",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "cluster_size",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "1",
+          "primaryKey": 0
+        },
+        {
+          "name": "source",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'synthesis'",
+          "primaryKey": 0
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'pending'",
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "decided_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "owner_user_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_memory_proposals_owner": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "owner_user_id"
+          ],
+          "sql": "CREATE INDEX idx_memory_proposals_owner ON memory_proposals(owner_user_id)"
+        },
+        "idx_proposals_status": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "status",
+            "project"
+          ],
+          "sql": "CREATE INDEX idx_proposals_status ON memory_proposals(status, project)"
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "memory_rules": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "scope",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "project",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "agent",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "kind",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "text",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "source",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'manual'",
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'active'",
+          "primaryKey": 0
+        },
+        {
+          "name": "tier",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'normal'",
+          "primaryKey": 0
+        },
+        {
+          "name": "supersedes",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "support",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "1",
+          "primaryKey": 0
+        },
+        {
+          "name": "role",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_rules_agent": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "agent"
+          ],
+          "sql": "CREATE INDEX idx_rules_agent ON memory_rules(agent)"
+        },
+        "idx_rules_role": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "role"
+          ],
+          "sql": "CREATE INDEX idx_rules_role ON memory_rules(role) WHERE scope='role'"
+        },
+        "idx_rules_scope_project": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "scope",
+            "project"
+          ],
+          "sql": "CREATE INDEX idx_rules_scope_project ON memory_rules(scope, project)"
+        },
+        "idx_rules_status_tier": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "status",
+            "tier",
+            "scope"
+          ],
+          "sql": "CREATE INDEX idx_rules_status_tier ON memory_rules(status, tier, scope)"
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {
+        "memory_rules_ad": "CREATE TRIGGER memory_rules_ad AFTER DELETE ON memory_rules BEGIN INSERT INTO memory_rules_fts(memory_rules_fts, rowid, text) VALUES ('delete', old.id, old.text); END",
+        "memory_rules_ai": "CREATE TRIGGER memory_rules_ai AFTER INSERT ON memory_rules BEGIN INSERT INTO memory_rules_fts(rowid, text) VALUES (new.id, new.text); END",
+        "memory_rules_au": "CREATE TRIGGER memory_rules_au AFTER UPDATE ON memory_rules BEGIN INSERT INTO memory_rules_fts(memory_rules_fts, rowid, text) VALUES ('delete', old.id, old.text); INSERT INTO memory_rules_fts(rowid, text) VALUES (new.id, new.text); END"
+      }
+    },
+    "memory_rules_fts": {
+      "kind": "virtual",
+      "withoutRowid": false,
+      "sql": "CREATE VIRTUAL TABLE memory_rules_fts USING fts5( text, content='memory_rules', content_rowid='id' )",
+      "columns": [
+        {
+          "name": "text",
+          "type": "",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {},
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "mission_prelude_fold": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "mission_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "version",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "up_to",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "state",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "sqlite_autoindex_mission_prelude_fold_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "mission_id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [
+        {
+          "columns": [
+            "mission_id"
+          ],
+          "references": "missions",
+          "referencedColumns": [
+            "id"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "triggers": {}
+    },
+    "mission_remote_resume": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "mission_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "state",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "sqlite_autoindex_mission_remote_resume_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "mission_id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [
+        {
+          "columns": [
+            "mission_id"
+          ],
+          "references": "missions",
+          "referencedColumns": [
+            "id"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "triggers": {}
+    },
+    "mission_search": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "mission_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "event_id",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "seq",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        },
+        {
+          "name": "role",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "ts",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "text",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_mission_search_event": {
+          "unique": true,
+          "origin": "c",
+          "columns": [
+            "event_id",
+            "seq"
+          ],
+          "sql": "CREATE UNIQUE INDEX idx_mission_search_event ON mission_search(event_id, seq) WHERE event_id IS NOT NULL"
+        },
+        "idx_mission_search_mission": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "mission_id"
+          ],
+          "sql": "CREATE INDEX idx_mission_search_mission ON mission_search(mission_id)"
+        },
+        "idx_mission_search_prompt": {
+          "unique": true,
+          "origin": "c",
+          "columns": [
+            "mission_id"
+          ],
+          "sql": "CREATE UNIQUE INDEX idx_mission_search_prompt ON mission_search(mission_id) WHERE event_id IS NULL"
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {
+        "mission_search_ad": "CREATE TRIGGER mission_search_ad AFTER DELETE ON mission_search BEGIN INSERT INTO mission_search_fts(mission_search_fts, rowid, text) VALUES ('delete', old.id, old.text); END",
+        "mission_search_ai": "CREATE TRIGGER mission_search_ai AFTER INSERT ON mission_search BEGIN INSERT INTO mission_search_fts(rowid, text) VALUES (new.id, new.text); END",
+        "mission_search_au": "CREATE TRIGGER mission_search_au AFTER UPDATE ON mission_search BEGIN INSERT INTO mission_search_fts(mission_search_fts, rowid, text) VALUES ('delete', old.id, old.text); INSERT INTO mission_search_fts(rowid, text) VALUES (new.id, new.text); END"
+      }
+    },
+    "mission_search_fts": {
+      "kind": "virtual",
+      "withoutRowid": false,
+      "sql": "CREATE VIRTUAL TABLE mission_search_fts USING fts5( text, content='mission_search', content_rowid='id' )",
+      "columns": [
+        {
+          "name": "text",
+          "type": "",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {},
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "mission_search_state": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "k",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "v",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "sqlite_autoindex_mission_search_state_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "k"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "mission_span_totals": {
+      "kind": "table",
+      "withoutRowid": true,
+      "columns": [
+        {
+          "name": "mission_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "spans",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "tools",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "errors",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "duration_ms",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "tokens_in",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "tokens_out",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "cost_usd",
+          "type": "REAL",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "sqlite_autoindex_mission_span_totals_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "mission_id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "mission_stats": {
+      "kind": "table",
+      "withoutRowid": true,
+      "columns": [
+        {
+          "name": "mission_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "ready",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "1",
+          "primaryKey": 0
+        },
+        {
+          "name": "backfill_cursor",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        },
+        {
+          "name": "backfill_upto",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        },
+        {
+          "name": "event_count",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        },
+        {
+          "name": "last_event_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "last_result_id",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "last_user_id",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "last_result_model",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_mission_stats_pending": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "ready"
+          ],
+          "sql": "CREATE INDEX idx_mission_stats_pending ON mission_stats(ready) WHERE ready = 0"
+        },
+        "sqlite_autoindex_mission_stats_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "mission_id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "missions": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "agent_name",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "mission",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'running'",
+          "primaryKey": 0
+        },
+        {
+          "name": "started_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "ended_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "exit_code",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "source_channel",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "source_meta",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "total_cost_usd",
+          "type": "REAL",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "tokens_in",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "tokens_out",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "session_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "summary",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "summary_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "summary_event_id",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "forked_from",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "backend_override",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "model_override",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "title",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "extra_skills",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "extra_mcp_servers",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "extra_allowed_tools",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "cwd_override",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "permission_mode_override",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "parent_mission_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "parent_agent",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "task_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "routine_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "documented_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "mcp_servers_override",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "interrupted_reason",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "reasoning_effort",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "return_notified",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        },
+        {
+          "name": "title_source",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "title_generation",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        },
+        {
+          "name": "owner_user_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "trace_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "workflow_run_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "workflow_node_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "browser_profile_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "browser_profile_resolved",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        },
+        {
+          "name": "user_engaged",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_missions_ended": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "ended_at"
+          ],
+          "sql": "CREATE INDEX idx_missions_ended ON missions(ended_at)"
+        },
+        "idx_missions_owner": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "owner_user_id"
+          ],
+          "sql": "CREATE INDEX idx_missions_owner ON missions(owner_user_id)"
+        },
+        "idx_missions_parent": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "parent_mission_id"
+          ],
+          "sql": "CREATE INDEX idx_missions_parent ON missions(parent_mission_id)"
+        },
+        "idx_missions_started": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "started_at"
+          ],
+          "sql": "CREATE INDEX idx_missions_started ON missions(started_at)"
+        },
+        "idx_missions_status": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "status"
+          ],
+          "sql": "CREATE INDEX idx_missions_status ON missions(status)"
+        },
+        "idx_missions_task": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "task_id"
+          ],
+          "sql": "CREATE INDEX idx_missions_task ON missions(task_id)"
+        },
+        "idx_missions_trace": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "trace_id"
+          ],
+          "sql": "CREATE INDEX idx_missions_trace ON missions(trace_id)"
+        },
+        "idx_missions_workflow_run": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "workflow_run_id"
+          ],
+          "sql": "CREATE INDEX idx_missions_workflow_run ON missions(workflow_run_id) WHERE workflow_run_id IS NOT NULL"
+        },
+        "sqlite_autoindex_missions_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {
+        "mission_stats_on_mission": "CREATE TRIGGER mission_stats_on_mission AFTER INSERT ON missions BEGIN INSERT OR IGNORE INTO mission_stats (mission_id) VALUES (new.id); END"
+      }
+    },
+    "notifications": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "type",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "urgent",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        },
+        {
+          "name": "title",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "body",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "task_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "mission_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "anchor",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "read_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "dismissed_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "source",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "dismiss_on",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "expires_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "owner_user_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_notifications_active": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "dismissed_at",
+            "created_at"
+          ],
+          "sql": "CREATE INDEX idx_notifications_active ON notifications(dismissed_at, created_at DESC)"
+        },
+        "idx_notifications_mission": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "mission_id"
+          ],
+          "sql": "CREATE INDEX idx_notifications_mission ON notifications(mission_id) WHERE mission_id IS NOT NULL"
+        },
+        "idx_notifications_owner": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "owner_user_id"
+          ],
+          "sql": "CREATE INDEX idx_notifications_owner ON notifications(owner_user_id)"
+        },
+        "idx_notifications_task": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "task_id"
+          ],
+          "sql": "CREATE INDEX idx_notifications_task ON notifications(task_id) WHERE task_id IS NOT NULL"
+        },
+        "sqlite_autoindex_notifications_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "pipeline_run_steps": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "run_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "step_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 2
+        },
+        {
+          "name": "task_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_pipeline_run_steps_task": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "task_id"
+          ],
+          "sql": "CREATE INDEX idx_pipeline_run_steps_task ON pipeline_run_steps(task_id)"
+        },
+        "sqlite_autoindex_pipeline_run_steps_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "run_id",
+            "step_id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [
+        {
+          "columns": [
+            "run_id"
+          ],
+          "references": "pipeline_runs",
+          "referencedColumns": [
+            "id"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "NO ACTION"
+        },
+        {
+          "columns": [
+            "task_id"
+          ],
+          "references": "tasks",
+          "referencedColumns": [
+            "id"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "NO ACTION"
+        }
+      ],
+      "triggers": {}
+    },
+    "pipeline_runs": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "pipeline_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "input_payload",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "started_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "owner_user_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "plugin_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_pipeline_runs_pipeline": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "pipeline_id",
+            "started_at"
+          ],
+          "sql": "CREATE INDEX idx_pipeline_runs_pipeline ON pipeline_runs(pipeline_id, started_at DESC)"
+        },
+        "idx_pipeline_runs_plugin": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "plugin_id"
+          ],
+          "sql": "CREATE INDEX idx_pipeline_runs_plugin ON pipeline_runs(plugin_id) WHERE plugin_id IS NOT NULL"
+        },
+        "sqlite_autoindex_pipeline_runs_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [
+        {
+          "columns": [
+            "pipeline_id"
+          ],
+          "references": "pipelines",
+          "referencedColumns": [
+            "id"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "NO ACTION"
+        }
+      ],
+      "triggers": {}
+    },
+    "pipelines": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "definition",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "owner_user_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_pipelines_owner": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "owner_user_id"
+          ],
+          "sql": "CREATE INDEX idx_pipelines_owner ON pipelines(owner_user_id)"
+        },
+        "sqlite_autoindex_pipelines_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "plugin_kv": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "plugin_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "key",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 2
+        },
+        {
+          "name": "value",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "sqlite_autoindex_plugin_kv_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "plugin_id",
+            "key"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "plugin_outbox": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "seq",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "plugin_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "key",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "method",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "url",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "url_secret",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "headers",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "body",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "sign_secret",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "auth_secret",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "auth_header",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "auth_scheme",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "attempts",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        },
+        {
+          "name": "next_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "delivered_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "failed_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "last_error",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_plugin_outbox_due": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "delivered_at",
+            "failed_at",
+            "next_at"
+          ],
+          "sql": "CREATE INDEX idx_plugin_outbox_due ON plugin_outbox(delivered_at, failed_at, next_at)"
+        },
+        "idx_plugin_outbox_key": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "plugin_id",
+            "key",
+            "seq"
+          ],
+          "sql": "CREATE INDEX idx_plugin_outbox_key ON plugin_outbox(plugin_id, key, seq)"
+        },
+        "sqlite_autoindex_plugin_outbox_1": {
+          "unique": true,
+          "origin": "u",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "project_todo": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "text",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "project",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'open'",
+          "primaryKey": 0
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "done_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "promoted_task_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "owner_user_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "author",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "urgency",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "progress",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_project_todo_owner": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "owner_user_id"
+          ],
+          "sql": "CREATE INDEX idx_project_todo_owner ON project_todo(owner_user_id)"
+        },
+        "idx_project_todo_status": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "status",
+            "created_at"
+          ],
+          "sql": "CREATE INDEX idx_project_todo_status ON project_todo(status, created_at)"
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "projects": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "slug",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "color",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "icon",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "workspace",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "cwd",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "speech",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "kind",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'active'",
+          "primaryKey": 0
+        },
+        {
+          "name": "last_activity",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "revenue_potential",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "revenue_locked",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        },
+        {
+          "name": "progress",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "score_rationale",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "score_updated_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "grepai_watch",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_by",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_projects_status_activity": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "status",
+            "last_activity"
+          ],
+          "sql": "CREATE INDEX idx_projects_status_activity ON projects(status, last_activity DESC)"
+        },
+        "sqlite_autoindex_projects_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "slug"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "push_deliveries": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "notification_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "subscription_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 2
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "sent_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "error",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_push_deliveries_sub": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "subscription_id"
+          ],
+          "sql": "CREATE INDEX idx_push_deliveries_sub ON push_deliveries(subscription_id)"
+        },
+        "sqlite_autoindex_push_deliveries_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "notification_id",
+            "subscription_id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "push_subscriptions": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "endpoint",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "p256dh",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "auth",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "device_label",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "last_seen_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "last_error",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "sqlite_autoindex_push_subscriptions_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        },
+        "sqlite_autoindex_push_subscriptions_2": {
+          "unique": true,
+          "origin": "u",
+          "columns": [
+            "endpoint"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "routines": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "agent_name",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "prompt",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "task_type",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'chore'",
+          "primaryKey": 0
+        },
+        {
+          "name": "cron_expr",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "enabled",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "1",
+          "primaryKey": 0
+        },
+        {
+          "name": "project",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "last_run_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "next_run_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "migrated_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_routines_enabled_next": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "enabled",
+            "next_run_at"
+          ],
+          "sql": "CREATE INDEX idx_routines_enabled_next ON routines(enabled, next_run_at)"
+        },
+        "sqlite_autoindex_routines_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "secret_access": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "secret_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "mission_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "agent",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "kind",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "outcome",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "detail",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_secret_access_at": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "at"
+          ],
+          "sql": "CREATE INDEX idx_secret_access_at ON secret_access(at)"
+        },
+        "idx_secret_access_secret": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "secret_id",
+            "at"
+          ],
+          "sql": "CREATE INDEX idx_secret_access_secret ON secret_access(secret_id, at DESC)"
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "secret_grants": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "secret_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "scope_kind",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 2
+        },
+        {
+          "name": "scope_ref",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 3
+        }
+      ],
+      "indexes": {
+        "sqlite_autoindex_secret_grants_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "secret_id",
+            "scope_kind",
+            "scope_ref"
+          ],
+          "sql": null
+        },
+        "ux_secret_grants": {
+          "unique": true,
+          "origin": "c",
+          "columns": [
+            "secret_id",
+            "scope_kind",
+            null
+          ],
+          "sql": "CREATE UNIQUE INDEX ux_secret_grants ON secret_grants(secret_id, scope_kind, COALESCE(scope_ref, ''))"
+        }
+      },
+      "foreignKeys": [
+        {
+          "columns": [
+            "secret_id"
+          ],
+          "references": "secrets",
+          "referencedColumns": [
+            "id"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "triggers": {}
+    },
+    "secret_requests": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "mission_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "owner_user_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "agent",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "reason",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "lifetime",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "broker_spec",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "browser_origin",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "project",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "mission_title",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'pending'",
+          "primaryKey": 0
+        },
+        {
+          "name": "secret_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "expires_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "resolved_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "spent_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "erased_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_secret_requests_mission": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "mission_id",
+            "name",
+            "status"
+          ],
+          "sql": "CREATE INDEX idx_secret_requests_mission ON secret_requests(mission_id, name, status)"
+        },
+        "idx_secret_requests_open": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "status",
+            "erased_at"
+          ],
+          "sql": "CREATE INDEX idx_secret_requests_open ON secret_requests(status, erased_at)"
+        },
+        "sqlite_autoindex_secret_requests_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "secrets": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "value_enc",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "mode",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "broker_spec",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "note",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_by",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_secrets_name": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "name"
+          ],
+          "sql": "CREATE INDEX idx_secrets_name ON secrets(name)"
+        },
+        "sqlite_autoindex_secrets_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "series_fallbacks": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "series_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "scope",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 2
+        },
+        {
+          "name": "backend",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "model",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "sqlite_autoindex_series_fallbacks_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "series_id",
+            "scope"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "series_group_fallbacks": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "series_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "plan_group",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 2
+        },
+        {
+          "name": "scope",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 3
+        },
+        {
+          "name": "backend",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "model",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "sqlite_autoindex_series_group_fallbacks_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "series_id",
+            "plan_group",
+            "scope"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "series_group_roles": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "series_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "plan_group",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 2
+        },
+        {
+          "name": "scope",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 3
+        },
+        {
+          "name": "backend",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "model",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "sqlite_autoindex_series_group_roles_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "series_id",
+            "plan_group",
+            "scope"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "series_roles": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "series_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "scope",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 2
+        },
+        {
+          "name": "backend",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "model",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "sqlite_autoindex_series_roles_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "series_id",
+            "scope"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "sessions": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "token_hash",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "user_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "expires_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "last_seen",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "user_agent",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_sessions_expires": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "expires_at"
+          ],
+          "sql": "CREATE INDEX idx_sessions_expires ON sessions(expires_at)"
+        },
+        "idx_sessions_user": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "user_id"
+          ],
+          "sql": "CREATE INDEX idx_sessions_user ON sessions(user_id)"
+        },
+        "sqlite_autoindex_sessions_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "token_hash"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [
+        {
+          "columns": [
+            "user_id"
+          ],
+          "references": "users",
+          "referencedColumns": [
+            "id"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "NO ACTION"
+        }
+      ],
+      "triggers": {}
+    },
+    "settings": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "key",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "value",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "sqlite_autoindex_settings_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "key"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "skill_attachments": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "skill",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "scope",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "target",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "''",
+          "primaryKey": 0
+        },
+        {
+          "name": "mode",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'include'",
+          "primaryKey": 0
+        },
+        {
+          "name": "exclude",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_skill_attachments_scope": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "scope",
+            "target"
+          ],
+          "sql": "CREATE INDEX idx_skill_attachments_scope ON skill_attachments(scope, target)"
+        },
+        "sqlite_autoindex_skill_attachments_1": {
+          "unique": true,
+          "origin": "u",
+          "columns": [
+            "skill",
+            "scope",
+            "target"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "skill_reads": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "skill",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "mission_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "agent",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_skill_reads_agent": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "agent",
+            "at"
+          ],
+          "sql": "CREATE INDEX idx_skill_reads_agent ON skill_reads(agent, at)"
+        },
+        "idx_skill_reads_at": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "at"
+          ],
+          "sql": "CREATE INDEX idx_skill_reads_at ON skill_reads(at)"
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "task_external_ref": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "task_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "provider",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "ref",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "url",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "label",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "plugin_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_task_external_ref_task": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "task_id"
+          ],
+          "sql": "CREATE INDEX idx_task_external_ref_task ON task_external_ref(task_id)"
+        },
+        "sqlite_autoindex_task_external_ref_1": {
+          "unique": true,
+          "origin": "u",
+          "columns": [
+            "provider",
+            "ref"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [
+        {
+          "columns": [
+            "task_id"
+          ],
+          "references": "tasks",
+          "referencedColumns": [
+            "id"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "triggers": {}
+    },
+    "tasks": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "title",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "agent_name",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'PENDING'",
+          "primaryKey": 0
+        },
+        {
+          "name": "priority",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "3",
+          "primaryKey": 0
+        },
+        {
+          "name": "deps",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'[]'",
+          "primaryKey": 0
+        },
+        {
+          "name": "mission_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "scheduled_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "blocked_reason",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "done_comment",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "extra_skills",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "extra_mcp_servers",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "extra_allowed_tools",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "type",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'chore'",
+          "primaryKey": 0
+        },
+        {
+          "name": "worktree_path",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "branch_name",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "base_branch",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "merged_commit_sha",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "pipeline",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "backend_override",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "model_override",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "permission_mode_override",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "fallback_backend_override",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "fallback_model_override",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "routine_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "trigger_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "iteration",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "1",
+          "primaryKey": 0
+        },
+        {
+          "name": "verification_root_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "group_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "plan_group",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "group_notified",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        },
+        {
+          "name": "return_notified",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        },
+        {
+          "name": "silent_return",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        },
+        {
+          "name": "mirror",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        },
+        {
+          "name": "chain_ran",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        },
+        {
+          "name": "chain_started_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "chain_attempts",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        },
+        {
+          "name": "creator_mission_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "series_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "interrupted_reason",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "requeue_count",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        },
+        {
+          "name": "quota_resets_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "blind_quota_deaths",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        },
+        {
+          "name": "project",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "owner_user_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "trace_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "todo_id",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "done_summary",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "started_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "parent_task_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_tasks_group": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "group_id"
+          ],
+          "sql": "CREATE INDEX idx_tasks_group ON tasks(group_id) WHERE group_id IS NOT NULL"
+        },
+        "idx_tasks_mission": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "mission_id"
+          ],
+          "sql": "CREATE INDEX idx_tasks_mission ON tasks(mission_id)"
+        },
+        "idx_tasks_owner": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "owner_user_id"
+          ],
+          "sql": "CREATE INDEX idx_tasks_owner ON tasks(owner_user_id)"
+        },
+        "idx_tasks_routine": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "routine_id"
+          ],
+          "sql": "CREATE INDEX idx_tasks_routine ON tasks(routine_id)"
+        },
+        "idx_tasks_series": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "series_id"
+          ],
+          "sql": "CREATE INDEX idx_tasks_series ON tasks(series_id) WHERE series_id IS NOT NULL"
+        },
+        "idx_tasks_status": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "status"
+          ],
+          "sql": "CREATE INDEX idx_tasks_status ON tasks(status)"
+        },
+        "idx_tasks_todo_id": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "todo_id"
+          ],
+          "sql": "CREATE INDEX idx_tasks_todo_id ON tasks(todo_id)"
+        },
+        "sqlite_autoindex_tasks_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [
+        {
+          "columns": [
+            "mission_id"
+          ],
+          "references": "missions",
+          "referencedColumns": [
+            "id"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "NO ACTION"
+        }
+      ],
+      "triggers": {}
+    },
+    "teams": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "owner_user_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "color",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_teams_owner": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "owner_user_id"
+          ],
+          "sql": "CREATE INDEX idx_teams_owner ON teams(owner_user_id)"
+        },
+        "sqlite_autoindex_teams_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "todo_external_ref": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "todo_id",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "provider",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "ref",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "url",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "label",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "plugin_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_todo_external_ref_todo": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "todo_id"
+          ],
+          "sql": "CREATE INDEX idx_todo_external_ref_todo ON todo_external_ref(todo_id)"
+        },
+        "sqlite_autoindex_todo_external_ref_1": {
+          "unique": true,
+          "origin": "u",
+          "columns": [
+            "provider",
+            "ref"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [
+        {
+          "columns": [
+            "todo_id"
+          ],
+          "references": "project_todo",
+          "referencedColumns": [
+            "id"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "triggers": {}
+    },
+    "todo_outcome": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "todo_id",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "resolution",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "public_note",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "duplicate_of",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {},
+      "foreignKeys": [
+        {
+          "columns": [
+            "todo_id"
+          ],
+          "references": "project_todo",
+          "referencedColumns": [
+            "id"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "triggers": {}
+    },
+    "trace_spans": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "trace_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "mission_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "parent_span_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "workflow_run_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "workflow_node_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "seq",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "kind",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "started_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "ended_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "duration_ms",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "input",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "output",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "error",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "tokens_in",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "tokens_out",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "cost_usd",
+          "type": "REAL",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "event_id_start",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "event_id_end",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_spans_mission": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "mission_id",
+            "seq"
+          ],
+          "sql": "CREATE INDEX idx_spans_mission ON trace_spans(mission_id, seq)"
+        },
+        "idx_spans_mission_agg": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "mission_id",
+            "kind",
+            "status",
+            "duration_ms"
+          ],
+          "sql": "CREATE INDEX idx_spans_mission_agg ON trace_spans(mission_id, kind, status, duration_ms)"
+        },
+        "idx_spans_open": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "status"
+          ],
+          "sql": "CREATE INDEX idx_spans_open ON trace_spans(status) WHERE status = 'running'"
+        },
+        "idx_spans_run": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "workflow_run_id",
+            "workflow_node_id",
+            "started_at"
+          ],
+          "sql": "CREATE INDEX idx_spans_run ON trace_spans(workflow_run_id, workflow_node_id, started_at)"
+        },
+        "idx_spans_trace": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "trace_id",
+            "started_at"
+          ],
+          "sql": "CREATE INDEX idx_spans_trace ON trace_spans(trace_id, started_at)"
+        },
+        "sqlite_autoindex_trace_spans_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [
+        {
+          "columns": [
+            "mission_id"
+          ],
+          "references": "missions",
+          "referencedColumns": [
+            "id"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "NO ACTION"
+        }
+      ],
+      "triggers": {}
+    },
+    "trigger_dedupe": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "trigger_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "key",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 2
+        },
+        {
+          "name": "at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "sqlite_autoindex_trigger_dedupe_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "trigger_id",
+            "key"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "trigger_deliveries": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "trigger_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "reason",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "delivery_key",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "excerpt",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "result",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_trigger_deliveries_trigger": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "trigger_id",
+            "id"
+          ],
+          "sql": "CREATE INDEX idx_trigger_deliveries_trigger ON trigger_deliveries(trigger_id, id)"
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "trigger_outbox": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "trigger_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "url",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "body",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "attempts",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        },
+        {
+          "name": "next_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "delivered_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "failed_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "last_error",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_trigger_outbox_due": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "delivered_at",
+            "failed_at",
+            "next_at"
+          ],
+          "sql": "CREATE INDEX idx_trigger_outbox_due ON trigger_outbox(delivered_at, failed_at, next_at)"
+        },
+        "sqlite_autoindex_trigger_outbox_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "triggers": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "slug",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "source",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "enabled",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "1",
+          "primaryKey": 0
+        },
+        {
+          "name": "config",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'{}'",
+          "primaryKey": 0
+        },
+        {
+          "name": "filter",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "actions",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'[]'",
+          "primaryKey": 0
+        },
+        {
+          "name": "secret",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "owner_user_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_by",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'user'",
+          "primaryKey": 0
+        },
+        {
+          "name": "creator_agent",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "acting_agent",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "grants",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "last_run_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "next_run_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "outbound_secret",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "approved_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_triggers_slug": {
+          "unique": true,
+          "origin": "c",
+          "columns": [
+            "slug"
+          ],
+          "sql": "CREATE UNIQUE INDEX idx_triggers_slug ON triggers(slug) WHERE slug IS NOT NULL"
+        },
+        "idx_triggers_source_next": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "source",
+            "enabled",
+            "next_run_at"
+          ],
+          "sql": "CREATE INDEX idx_triggers_source_next ON triggers(source, enabled, next_run_at)"
+        },
+        "sqlite_autoindex_triggers_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "ui_documents": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "mission_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "owner_user_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "origin_kind",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "origin_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "title",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "html",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "bridge",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'timon'",
+          "primaryKey": 0
+        },
+        {
+          "name": "height",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "expects_reply",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "reply",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "resolved_by_kind",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "resolved_by_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "resolved_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "ref_provider",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "ref",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "project",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "mission_title",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "task_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_ui_documents_mission": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "mission_id",
+            "created_at"
+          ],
+          "sql": "CREATE INDEX idx_ui_documents_mission ON ui_documents(mission_id, created_at)"
+        },
+        "idx_ui_documents_owner": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "owner_user_id",
+            "status",
+            "created_at"
+          ],
+          "sql": "CREATE INDEX idx_ui_documents_owner ON ui_documents(owner_user_id, status, created_at)"
+        },
+        "idx_ui_documents_ref": {
+          "unique": true,
+          "origin": "c",
+          "columns": [
+            "origin_id",
+            "ref_provider",
+            "ref"
+          ],
+          "sql": "CREATE UNIQUE INDEX idx_ui_documents_ref ON ui_documents(origin_id, ref_provider, ref) WHERE ref IS NOT NULL"
+        },
+        "sqlite_autoindex_ui_documents_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "ui_layout": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "owner",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "''",
+          "primaryKey": 1
+        },
+        {
+          "name": "scope",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 2
+        },
+        {
+          "name": "value",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "sqlite_autoindex_ui_layout_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "owner",
+            "scope"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "user_prefs": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "user_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "theme",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "layout",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "scheme",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "mission_title_model",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "model_favorites",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "plan_presets",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "theme_kept",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "sqlite_autoindex_user_prefs_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "user_id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "users": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "email",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "password_hash",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "notNull": true,
+          "default": "'active'",
+          "primaryKey": 0
+        },
+        {
+          "name": "is_superadmin",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "0",
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "last_login_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "avatar_url",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "welcome_stage",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_users_status": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "status"
+          ],
+          "sql": "CREATE INDEX idx_users_status ON users(status)"
+        },
+        "sqlite_autoindex_users_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        },
+        "sqlite_autoindex_users_2": {
+          "unique": true,
+          "origin": "u",
+          "columns": [
+            "email"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "workflow_run_nodes": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "run_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "node_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 2
+        },
+        {
+          "name": "attempt",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "1",
+          "primaryKey": 3
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "mission_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "input",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "output",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "error",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "taken_port",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "started_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "ended_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "tokens_in",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "tokens_out",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_wf_nodes_mission": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "mission_id"
+          ],
+          "sql": "CREATE INDEX idx_wf_nodes_mission ON workflow_run_nodes(mission_id)"
+        },
+        "sqlite_autoindex_workflow_run_nodes_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "run_id",
+            "node_id",
+            "attempt"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "workflow_runs": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "workflow_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "version",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "trigger",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "input",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "context",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "error",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "started_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "ended_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "owner_user_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "tokens_in",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "tokens_out",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "cost_usd",
+          "type": "REAL",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_wf_runs_open": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "status"
+          ],
+          "sql": "CREATE INDEX idx_wf_runs_open ON workflow_runs(status) WHERE status IN ('running','waiting')"
+        },
+        "idx_wf_runs_owner": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "owner_user_id"
+          ],
+          "sql": "CREATE INDEX idx_wf_runs_owner ON workflow_runs(owner_user_id)"
+        },
+        "idx_wf_runs_wf": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "workflow_id",
+            "started_at"
+          ],
+          "sql": "CREATE INDEX idx_wf_runs_wf ON workflow_runs(workflow_id, started_at DESC)"
+        },
+        "idx_workflow_runs_owner": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "owner_user_id"
+          ],
+          "sql": "CREATE INDEX idx_workflow_runs_owner ON workflow_runs(owner_user_id)"
+        },
+        "sqlite_autoindex_workflow_runs_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "workflow_triggers": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "workflow_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "node_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 2
+        },
+        {
+          "name": "kind",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "token",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "next_run_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "last_run_at",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "sqlite_autoindex_workflow_triggers_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "workflow_id",
+            "node_id"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "workflow_versions": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "workflow_id",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "version",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 2
+        },
+        {
+          "name": "definition",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "published_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "published_by",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "sqlite_autoindex_workflow_versions_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "workflow_id",
+            "version"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "workflows": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "slug",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "project",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "owner_user_id",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "draft",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "published_version",
+          "type": "INTEGER",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "enabled",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": "1",
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "agent_name",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "idx_workflows_owner": {
+          "unique": false,
+          "origin": "c",
+          "columns": [
+            "owner_user_id"
+          ],
+          "sql": "CREATE INDEX idx_workflows_owner ON workflows(owner_user_id)"
+        },
+        "sqlite_autoindex_workflows_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "id"
+          ],
+          "sql": null
+        },
+        "sqlite_autoindex_workflows_2": {
+          "unique": true,
+          "origin": "u",
+          "columns": [
+            "slug"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    },
+    "workspaces": {
+      "kind": "table",
+      "withoutRowid": false,
+      "columns": [
+        {
+          "name": "slug",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 1
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "color",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "lead_agent",
+          "type": "TEXT",
+          "notNull": false,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "notNull": true,
+          "default": null,
+          "primaryKey": 0
+        }
+      ],
+      "indexes": {
+        "sqlite_autoindex_workspaces_1": {
+          "unique": true,
+          "origin": "pk",
+          "columns": [
+            "slug"
+          ],
+          "sql": null
+        }
+      },
+      "foreignKeys": [],
+      "triggers": {}
+    }
+  }
+}
